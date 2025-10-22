@@ -1,36 +1,30 @@
-import asyncio
-import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
+import logging
+import os
 
-# === CONFIGURACIÓN ===
-TOKEN = "8408629487:AAG3ljf-zZzzFZ56BESet-GSYYqD9wDGj7Y"  # 👈 reemplaza por tu token real
+TOKEN = os.getenv("8408629487:AAG3ljf-zZzzFZ56BESet-GSYYqD9wDGj7Y")
 
-# Configuración básica de logs
+# Configuración de logs
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-# === HANDLERS ===
+# Handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("¡Hola! 👋 El bot está funcionando correctamente.")
+    await update.message.reply_text("Hola! Bot iniciado 🚀")
 
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Aquí iría la ayuda del bot.")
-
-# === MAIN ===
-async def main():
+def main():
+    # Creamos la aplicación
     app = Application.builder().token(TOKEN).build()
 
-    # Comandos básicos
+    # Añadimos handlers
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_command))
 
-    # Arranca el bot
-    logger.info("Bot iniciado 🚀")
-    await app.run_polling()
+    # Ejecutamos el bot
+    app.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
