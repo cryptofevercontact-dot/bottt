@@ -1,33 +1,22 @@
-import os
-import logging
+import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# Logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+# TOKEN inventado para pruebas
+TOKEN = "8408629487:AAG3ljf-zZzzFZ56BESet-GSYYqD9wDGj7Y"  # ⚠️ Este no es real
 
-# Token del bot desde variables de entorno
-TOKEN = os.environ.get("8408629487:AAG3ljf-zZzzFZ56BESet-GSYYqD9wDGj7Y")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("¡Hola! Bot corriendo correctamente.")
 
-# Comando /start
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("¡Hola! Soy tu bot funcionando en Python 3.11 🚀")
-
-# Función principal
-async def main() -> None:
-    # Crear aplicación
+async def main():
+    # Construimos la aplicación con el token
     app = Application.builder().token(TOKEN).build()
 
-    # Agregar manejador de comandos
+    # Añadimos un comando simple
     app.add_handler(CommandHandler("start", start))
 
-    # Ejecutar bot
+    # Ejecutamos el bot
     await app.run_polling()
 
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
