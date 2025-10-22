@@ -1,80 +1,73 @@
-# main.py
-from telegram import Update
-from telegram.constants import ParseMode
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-import requests
-import numpy as np
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
+from telegram import Update
+from telegram.constants import ParseMode
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from flask import Flask, request, send_file
+from io import BytesIO
 
-# ----------------------------
-# Funciones del bot
-# ----------------------------
+# Variables
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+PORT = int(os.environ.get("PORT", 5000))
 
+# Inicializar Flask y Telegram
+app_flask = Flask(__name__)
+app_telegram = ApplicationBuilder().token(TOKEN).build()
+
+# Handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("¡Hola! Soy tu bot, listo para ayudarte.")
+    await update.message.reply_text("¡Hola! Soy tu bot de Telegram.")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Comandos disponibles:\n"
-        "/start - Iniciar bot\n"
-        "/help - Mostrar ayuda\n"
-        "/datos - Mostrar ejemplo de datos\n"
-        "/grafico - Generar gráfico de ejemplo"
-    )
+    await update.message.reply_text("Comandos disponibles:\n/start\n/help\n/datos\n/grafico")
 
 async def datos(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    url = "https://jsonplaceholder.typicode.com/todos"
-    response = requests.get(url)
-    if response.status_code == 200:
-        data = pd.DataFrame(response.json())
-        muestra = data.head()
-        await update.message.reply_text(
-            f"Primeros 5 registros:\n{muestra.to_string()}",
-            parse_mode=ParseMode.MARKDOWN
-        )
-    else:
-        await update.message.reply_text("No se pudieron obtener los datos.")
+    # Ejemplo de DataFrame
+    df = pd.DataFrame({
+        "Nombre": ["Alice", "Bob", "Charlie"],
+        "Edad": [25, 30, 35]
+    })
+    await update.message.reply_text(f"Datos:\n{df.to_string(index=False)}")
 
 async def grafico(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    x = np.linspace(0, 10, 100)
-    y = np.sin(x)
+    df = pd.DataFrame({
+        "Nombre": ["Alice", "Bob", "Charlie"],
+        "Edad": [25, 30, 35]
+    })
 
-    plt.figure()
-    plt.plot(x, y)
-    plt.title("Gráfico de ejemplo")
-    plt.xlabel("x")
-    plt.ylabel("sin(x)")
-    plt.grid(True)
-    
-    # Guardamos el gráfico en la carpeta temporal de Render
-    grafico_path = os.path.join("/tmp", "grafico.png")
-    plt.savefig(grafico_path)
+    plt.figure(figsize=(6,4))
+    plt.bar(df["Nombre"], df["Edad"])
+    plt.title("Edad por Nombre")
+    plt.ylabel("Edad")
+
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
     plt.close()
 
-    with open(grafico_path, "rb") as f:
-        await update.message.reply_photo(f)
+    await update.message.reply_photo(photo=buffer)
 
 async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(f"Me has dicho: {update.message.text}")
+    await update.message.reply_text(update.message.text)
 
-# ----------------------------
-# Configuración del bot
-# ----------------------------
+# Agregar handlers
+app_telegram.add_handler(CommandHandler("start", start))
+app_telegram.add_handler(CommandHandler("help", help_command))
+app_telegram.add_handler(CommandHandler("datos", datos))
+app_telegram.add_handler(CommandHandler("grafico", grafico))
+app_telegram.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
-def main():
-    TOKEN = os.environ.get("TELEGRAM_TOKEN")  # mejor usar variable de entorno en Render
+# Ruta para webhook
+@app_flask.route(f"/{TOKEN}", methods=["POST"])
+def webhook():
+    update = Update.de_json(request.get_json(force=True), app_telegram.bot)
+    app_telegram.update_queue.put(update)
+    return "ok"
 
-    app = ApplicationBuilder().token(TOKEN).build()
-
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("help", help_command))
-    app.add_handler(CommandHandler("datos", datos))
-    app.add_handler(CommandHandler("grafico", grafico))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
-
-    app.run_polling()
-
+# Iniciar Flask y configurar webhook
 if __name__ == "__main__":
-    main()
+    WEBHOOK_URL = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}/{TOKEN}"
+    app_telegram.bot.set_webhook(WEBHOOK_URL)
+    print(f"Webhook configurado en: {WEBHOOK_URL}")
+    app_flask.run(host="0.0.0.0", port=PORT)
