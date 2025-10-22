@@ -1,7 +1,8 @@
+Flask==2.3.3
 python-telegram-bot==20.7
+hypercorn==1.0.0
 requests==2.31.0
 numpy==1.26.0
 pandas==2.1.1
 matplotlib==3.8.1
-httpx~=0.25.2
-Flask==2.3.3
+pillow==12.0.0
