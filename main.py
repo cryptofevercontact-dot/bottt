@@ -5,7 +5,7 @@ import yfinance as yf
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-TOKEN = "TU_TOKEN_AQUI"  # <--- Pon aquí tu token de Telegram
+TOKEN = "8408629487:AAG3ljf-zZzzFZ56BESet-GSYYqD9wDGj7Y"  # <--- Pon aquí tu token de Telegram
 
 def prediccion_sui_simple():
     try:
@@ -66,3 +66,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
