@@ -9,7 +9,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 # -----------------------------
 # Configuración
 # -----------------------------
-TOKEN = "TU_TOKEN_AQUI"  # reemplaza con tu token real
+TOKEN = "8408629487:AAG3ljf-zZzzFZ56BESet-GSYYqD9wDGj7Y"  # reemplaza con tu token real
 
 # -----------------------------
 # Función de predicción SUI
@@ -79,3 +79,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
