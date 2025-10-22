@@ -1,4 +1,3 @@
-# main.py
 import asyncio
 import numpy as np
 import pandas as pd
@@ -6,14 +5,8 @@ import yfinance as yf
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# -----------------------------
-# Configuración
-# -----------------------------
-TOKEN = "8408629487:AAG3ljf-zZzzFZ56BESet-GSYYqD9wDGj7Y"  # reemplaza con tu token real
+TOKEN = "TU_TOKEN_AQUI"  # <--- Pon aquí tu token de Telegram
 
-# -----------------------------
-# Función de predicción SUI
-# -----------------------------
 def prediccion_sui_simple():
     try:
         data = yf.download("SUI-USD", period="max", interval="1h", auto_adjust=True)
@@ -56,9 +49,6 @@ def prediccion_sui_simple():
     except Exception as e:
         return f"Error descargando datos: {e}"
 
-# -----------------------------
-# Handlers de Telegram
-# -----------------------------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("¡Hola! Soy tu bot de predicción de SUI/USD.\nUsa /sui para obtener la predicción.")
 
@@ -67,16 +57,12 @@ async def sui(update: Update, context: ContextTypes.DEFAULT_TYPE):
     resultado = prediccion_sui_simple()
     await update.message.reply_text(resultado)
 
-# -----------------------------
-# Función principal
-# -----------------------------
-def main():
+async def main():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("sui", sui))
     print("🚀 Bot iniciado. Esperando comandos...")
-    app.run_polling()
+    await app.run_polling()
 
 if __name__ == "__main__":
-    main()
-
+    asyncio.run(main())
